@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Digital Journal</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --bg: #f9fafb;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+      --error: #dc2626;
+      --success: #10b981;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 0.5rem;
+    }
+
+    .dark-mode {
+      --primary: #6366f1;
+      --primary-hover: #818cf8;
+      --text: #f3f4f6;
+      --text-light: #9ca3af;
+      --bg: #111827;
+      --card-bg: #1f2937;
+      --border: #374151;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s ease, color 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    h1, h2, h3, h4 {
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    small {
+      font-size: 0.875rem;
+      color: var(--text-light);
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      background-color: var(--card-bg);
+      color: var(--text);
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button.secondary {
+      background-color: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    button.secondary:hover {
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+
+    button.danger {
+      background-color: var(--error);
+    }
+
+    button.danger:hover {
+      background-color: #b91c1c;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn-group button {
+      flex: 1;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error-msg {
+      color: var(--error);
+      margin-top: -0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .entry {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--primary);
+    }
+
+    .entry h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .entry-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .entry-actions button {
+      width: auto;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .filters > * {
+      margin-bottom: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background-color: var(--card-bg);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: rgba(79, 70, 229, 0.1);
+      font-weight: 600;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .login-card {
+      max-width: 400px;
+      margin: 5rem auto;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .login-card h2 {
+      margin-bottom: 2rem;
+    }
+
+    .login-card input {
+      margin-bottom: 1.5rem;
+    }
+
+    .login-card button {
+      margin-top: 1rem;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: var(--card-bg);
+      color: var(--text);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .file-input-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--text-light);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .category-select-wrapper {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .category-select-wrapper select {
+      flex: 1;
+    }
+
+    .category-select-wrapper button {
+      width: auto;
+      padding: 0 1rem;
+    }
+
+    .custom-category-input {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: -0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .custom-category-input input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .custom-category-input button {
+      width: auto;
+      padding: 0 1rem;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-container {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .chart-container canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .filters {
+        grid-template-columns: 1fr;
+      }
+      
+      .chart-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="login" class="login-card card">
+    <h2><i class="fas fa-lock"></i> Journal Access</h2>
+    <input type="password" id="password" placeholder="Enter your password" />
+    <div id="error" class="error-msg">Incorrect password. Please try again.</div>
+    <button onclick="handleLogin()" id="loginBtn">
+      <i class="fas fa-sign-in-alt"></i> Continue
+    </button>
+  </div>
+
+  <div id="journal" class="container hidden">
+    <div class="top-bar">
+      <h1><i class="fas fa-book-open"></i> My Digital Journal</h1>
+      <button onclick="toggleTheme()" class="secondary">
+        <i class="fas fa-moon"></i> Theme
+      </button>
+    </div>
+
+    <div class="card">
+      <h2><i class="fas fa-plus-circle"></i> New Entry</h2>
+      <input type="text" id="title" placeholder="Entry Title" />
+      <input type="date" id="date" />
+      <textarea id="content" rows="5" placeholder="Write your thoughts..."></textarea>
+      <div class="filters">
+        <div class="category-select-wrapper">
+          <select id="category">
+            <option value="">Select Category</option>
+            <option value="Bad Memories / Bad Past Events">Bad Memories / Bad Past Events</option>
+            <option value="History / Past Reflections">History / Past Reflections</option>
+            <option value="Achievements">Achievements</option>
+            <option value="Plans / Dreams">Plans / Dreams</option>
+            <option value="Implementation / Action Steps">Implementation / Action Steps</option>
+            <!-- Custom categories will be added here -->
+          </select>
+          <button onclick="showCustomCategoryInput()" class="secondary" title="Add custom category">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div id="custom-category-container" class="hidden">
+          <div class="custom-category-input">
+            <input type="text" id="new-category" placeholder="New category name" />
+            <button onclick="addCustomCategory()" class="secondary">
+              <i class="fas fa-check"></i> Add
+            </button>
+          </div>
+        </div>
+        <select id="mood">
+          <option value="😊">😊 Happy</option>
+          <option value="😐">😐 Neutral</option>
+          <option value="😢">😢 Sad</option>
+          <option value="😠">😠 Angry</option>
+        </select>
+      </div>
+      <button onclick="addEntry()">
+        <i class="fas fa-save"></i> Save Entry
+      </button>
+    </div>
+
+    <div class="card">
+      <h2><i class="fas fa-filter"></i> Filter Entries</h2>
+      <div class="filters">
+        <input type="text" id="search" placeholder="Search entries..." oninput="searchEntries()" />
+        <input type="date" id="filter-date" onchange="searchEntries()" />
+        <select id="filter-category" onchange="searchEntries()">
+          <option value="">All Categories</option>
+          <option value="Bad Memories / Bad Past Events">Bad Memories / Bad Past Events</option>
+          <option value="History / Past Reflections">History / Past Reflections</option>
+          <option value="Achievements">Achievements</option>
+          <option value="Plans / Dreams">Plans / Dreams</option>
+          <option value="Implementation / Action Steps">Implementation / Action Steps</option>
+          <!-- Custom categories will be added here -->
+        </select>
+        <select id="filter-mood" onchange="searchEntries()">
+          <option value="">All Moods</option>
+          <option value="😊">😊 Happy</option>
+          <option value="😐">😐 Neutral</option>
+          <option value="😢">😢 Sad</option>
+          <option value="😠">😠 Angry</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button onclick="exportEntries()">
+        <i class="fas fa-file-export"></i> Export
+      </button>
+      <div class="file-input-wrapper">
+        <button class="secondary">
+          <i class="fas fa-file-import"></i> Import
+        </button>
+        <input type="file" id="importFile" accept=".json" onchange="importEntries(event)" />
+      </div>
+      <button onclick="clearAllEntries()" class="danger">
+        <i class="fas fa-trash"></i> Clear All
+      </button>
+    </div>
+
+    <div id="entries">
+      <div class="empty-state">
+        <i class="fas fa-book"></i>
+        <h3>No entries yet</h3>
+        <p>Start by adding your first journal entry above</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="category-summary" class="container hidden">
+    <div class="card">
+      <div class="top-bar">
+        <h2><i class="fas fa-chart-pie"></i> Category Summary</h2>
+        <button onclick="toggleCategorySummary()" class="secondary">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Entry Count</th>
+            <th>Mood Distribution</th>
+            <th>Latest Date</th>
+          </tr>
+        </thead>
+        <tbody id="category-summary-body">
+          <!-- Summary entries will go here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="chart-container" class="container hidden">
+    <div class="card">
+      <div class="top-bar">
+        <h2><i class="fas fa-chart-bar"></i> Analytics Dashboard</h2>
+        <button onclick="toggleCharts()" class="secondary">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-container">
+          <h3>Category Distribution</h3>
+          <canvas id="categoryChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Mood Distribution</h3>
+          <canvas id="moodChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let categoryChartInstance = null;
+    let moodChartInstance = null;
+    let customCategories = JSON.parse(localStorage.getItem('customCategories')) || [];
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('date').valueAsDate = new Date();
+      loadCustomCategories();
+    });
+
+    function handleLogin() {
+      const pass = document.getElementById('password').value;
+      const errorMsg = document.getElementById('error');
+      let savedPass = localStorage.getItem('journalPassword');
+
+      if (!savedPass) {
+        localStorage.setItem('journalPassword', pass);
+        alert("Password set successfully! Please use this password to access your journal in the future.");
+        showJournal();
+      } else if (pass === savedPass) {
+        errorMsg.style.display = 'none';
+        showJournal();
+      } else {
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    function showJournal() {
+      document.getElementById('login').classList.add('hidden');
+      document.getElementById('journal').classList.remove('hidden');
+      loadEntries();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const themeIcon = document.querySelector('.top-bar button.secondary i');
+      if (document.body.classList.contains('dark-mode')) {
+        themeIcon.classList.replace('fa-moon', 'fa-sun');
+      } else {
+        themeIcon.classList.replace('fa-sun', 'fa-moon');
+      }
+    }
+
+    function showCustomCategoryInput() {
+      document.getElementById('custom-category-container').classList.remove('hidden');
+      document.getElementById('new-category').focus();
+    }
+
+    function addCustomCategory() {
+      const newCategory = document.getElementById('new-category').value.trim();
+      if (!newCategory) return;
+
+      // Add to custom categories if not already exists
+      if (!customCategories.includes(newCategory)) {
+        customCategories.push(newCategory);
+        localStorage.setItem('customCategories', JSON.stringify(customCategories));
+      }
+
+      // Add to category dropdown
+      addCategoryToDropdowns(newCategory);
+
+      // Select the new category
+      document.getElementById('category').value = newCategory;
+
+      // Hide the input and clear it
+      document.getElementById('custom-category-container').classList.add('hidden');
+      document.getElementById('new-category').value = '';
+    }
+
+    function loadCustomCategories() {
+      customCategories.forEach(category => {
+        addCategoryToDropdowns(category);
+      });
+    }
+
+    function addCategoryToDropdowns(category) {
+      // Add to main category dropdown if not already exists
+      const categorySelect = document.getElementById('category');
+      if (!Array.from(categorySelect.options).some(opt => opt.value === category)) {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categorySelect.appendChild(option);
+      }
+
+      // Add to filter category dropdown if not already exists
+      const filterCategorySelect = document.getElementById('filter-category');
+      if (!Array.from(filterCategorySelect.options).some(opt => opt.value === category)) {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        filterCategorySelect.appendChild(option);
+      }
+    }
+
+    function addEntry() {
+      const title = document.getElementById('title').value;
+      const date = document.getElementById('date').value;
+      const content = document.getElementById('content').value;
+      const category = document.getElementById('category').value;
+      const mood = document.getElementById('mood').value;
+
+      if (!title || !date || !content || !category) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      const entry = { title, date, content, category, mood, id: Date.now() };
+      const entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      entries.unshift(entry);
+      localStorage.setItem('journalEntries', JSON.stringify(entries));
+
+      clearForm();
+      loadEntries();
+    }
+
+    function loadEntries() {
+      const container = document.getElementById('entries');
+      const entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      
+      if (entries.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-book"></i>
+            <h3>No entries yet</h3>
+            <p>Start by adding your first journal entry above</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      
+      // Initialize category count, mood count, and latest dates objects
+      const categoryCount = {};
+      const categoryMoods = {};
+      const latestDates = {};
+      
+      // Initialize mood counts
+      const moodCount = {
+        "😊": 0,
+        "😐": 0,
+        "😢": 0,
+        "😠": 0
+      };
+      
+      // Initialize with default categories
+      const allCategories = [
+        "Bad Memories / Bad Past Events",
+        "History / Past Reflections",
+        "Achievements",
+        "Plans / Dreams",
+        "Implementation / Action Steps",
+        ...customCategories
+      ];
+      
+      allCategories.forEach(category => {
+        categoryCount[category] = 0;
+        categoryMoods[category] = {
+          "😊": 0,
+          "😐": 0,
+          "😢": 0,
+          "😠": 0
+        };
+        latestDates[category] = null;
+      });
+
+      entries.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'entry';
+        div.innerHTML = `
+          <h3>${entry.title} <small>${entry.mood}</small></h3>
+          <small>${entry.date} - <strong>${entry.category}</strong></small>
+          <p>${entry.content}</p>
+          <div class="entry-actions">
+            <button onclick="deleteEntry(${entry.id})" class="danger">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+
+        // Update mood count
+        if (moodCount[entry.mood] !== undefined) {
+          moodCount[entry.mood]++;
+        }
+
+        // Update category count, mood distribution, and latest date
+        if (categoryCount[entry.category] !== undefined) {
+          categoryCount[entry.category]++;
+          
+          if (categoryMoods[entry.category][entry.mood] !== undefined) {
+            categoryMoods[entry.category][entry.mood]++;
+          }
+          
+          if (!latestDates[entry.category] || new Date(entry.date) > new Date(latestDates[entry.category])) {
+            latestDates[entry.category] = entry.date;
+          }
+        } else {
+          // Handle case where category is not in our predefined list
+          categoryCount[entry.category] = 1;
+          categoryMoods[entry.category] = {
+            "😊": entry.mood === "😊" ? 1 : 0,
+            "😐": entry.mood === "😐" ? 1 : 0,
+            "😢": entry.mood === "😢" ? 1 : 0,
+            "😠": entry.mood === "😠" ? 1 : 0
+          };
+          latestDates[entry.category] = entry.date;
+        }
+      });
+
+      // Display category summary with mood data
+      displayCategorySummary(categoryCount, categoryMoods, latestDates);
+      // Display Charts
+      displayCategoryChart(categoryCount);
+      displayMoodChart(moodCount);
+    }
+
+    function displayCategorySummary(categoryCount, categoryMoods, latestDates) {
+      const summaryBody = document.getElementById('category-summary-body');
+      summaryBody.innerHTML = '';
+
+      // Sort categories by count (descending)
+      const sortedCategories = Object.keys(categoryCount).sort((a, b) => categoryCount[b] - categoryCount[a]);
+
+      sortedCategories.forEach(category => {
+        if (categoryCount[category] > 0) {
+          const row = document.createElement('tr');
+          
+          // Create mood distribution text
+          const moodText = [];
+          if (categoryMoods[category]["😊"] > 0) moodText.push(`😊 ${categoryMoods[category]["😊"]}`);
+          if (categoryMoods[category]["😐"] > 0) moodText.push(`😐 ${categoryMoods[category]["😐"]}`);
+          if (categoryMoods[category]["😢"] > 0) moodText.push(`😢 ${categoryMoods[category]["😢"]}`);
+          if (categoryMoods[category]["😠"] > 0) moodText.push(`😠 ${categoryMoods[category]["😠"]}`);
+          
+          row.innerHTML = `
+            <td>${category}</td>
+            <td>${categoryCount[category]}</td>
+            <td>${moodText.join(', ')}</td>
+            <td>${latestDates[category] || 'N/A'}</td>
+          `;
+          summaryBody.appendChild(row);
+        }
+      });
+
+      document.getElementById('category-summary').classList.remove('hidden');
+    }
+
+    function displayCategoryChart(categoryCount) {
+      const ctx = document.getElementById('categoryChart').getContext('2d');
+
+      // Filter out categories with 0 entries and sort by count
+      const filteredCategories = Object.entries(categoryCount)
+        .filter(([_, count]) => count > 0)
+        .sort((a, b) => b[1] - a[1]);
+
+      const labels = filteredCategories.map(([category]) => category);
+      const data = filteredCategories.map(([_, count]) => count);
+
+      if (categoryChartInstance) {
+        categoryChartInstance.destroy();
+      }
+
+      // Generate distinct colors for each category
+      const backgroundColors = labels.map((_, index) => {
+        const hue = (index * 137.508) % 360; // Golden angle for distinct colors
+        return `hsl(${hue}, 70%, 60%)`;
+      });
+
+      categoryChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Category Distribution',
+            data: data,
+            backgroundColor: backgroundColors,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return tooltipItem.label + ': ' + tooltipItem.raw + ' entries';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function displayMoodChart(moodCount) {
+      const ctx = document.getElementById('moodChart').getContext('2d');
+
+      // Filter out moods with 0 entries
+      const filteredMoods = Object.entries(moodCount)
+        .filter(([_, count]) => count > 0);
+
+      const labels = filteredMoods.map(([mood]) => mood);
+      const data = filteredMoods.map(([_, count]) => count);
+
+      if (moodChartInstance) {
+        moodChartInstance.destroy();
+      }
+
+      // Mood-specific colors
+      const backgroundColors = labels.map(mood => {
+        switch(mood) {
+          case "😊": return '#4ade80'; // Happy - green
+          case "😐": return '#94a3b8'; // Neutral - gray
+          case "😢": return '#60a5fa'; // Sad - blue
+          case "😠": return '#f87171'; // Angry - red
+          default: return '#c084fc'; // Purple fallback
+        }
+      });
+
+      moodChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Mood Distribution',
+            data: data,
+            backgroundColor: backgroundColors,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return tooltipItem.label + ': ' + tooltipItem.raw + ' entries';
+                }
+              }
+            }
+          }
+        }
+      });
+
+      document.getElementById('chart-container').classList.remove('hidden');
+    }
+
+    function toggleCategorySummary() {
+      const summaryContainer = document.getElementById('category-summary');
+      summaryContainer.classList.toggle('hidden');
+    }
+
+    function toggleCharts() {
+      const chartContainer = document.getElementById('chart-container');
+      chartContainer.classList.toggle('hidden');
+    }
+
+    function deleteEntry(id) {
+      if (confirm("Are you sure you want to delete this entry?")) {
+        let entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+        entries = entries.filter(e => e.id !== id);
+        localStorage.setItem('journalEntries', JSON.stringify(entries));
+        loadEntries();
+      }
+    }
+
+    function clearForm() {
+      document.getElementById('title').value = '';
+      document.getElementById('date').value = '';
+      document.getElementById('content').value = '';
+      document.getElementById('category').value = '';
+      document.getElementById('mood').value = '';
+    }
+
+    function exportEntries() {
+      const entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      if (entries.length === 0) {
+        alert("No entries to export.");
+        return;
+      }
+      
+      // Include custom categories in the export
+      const exportData = {
+        entries: entries,
+        customCategories: customCategories
+      };
+      
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'journal_entries_' + new Date().toISOString().split('T')[0] + '.json';
+      link.click();
+    }
+
+    function importEntries(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          
+          if (!importedData.entries || !Array.isArray(importedData.entries)) {
+            alert("Invalid file format. Please import a valid journal export file.");
+            return;
+          }
+
+          if (confirm(`Import ${importedData.entries.length} entries? This will add to your existing entries.`)) {
+            // Import custom categories if they exist
+            if (importedData.customCategories && Array.isArray(importedData.customCategories)) {
+              importedData.customCategories.forEach(category => {
+                if (!customCategories.includes(category)) {
+                  customCategories.push(category);
+                  addCategoryToDropdowns(category);
+                }
+              });
+              localStorage.setItem('customCategories', JSON.stringify(customCategories));
+            }
+
+            // Import entries
+            const currentEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+            const allEntries = [...importedData.entries, ...currentEntries];
+            localStorage.setItem('journalEntries', JSON.stringify(allEntries));
+            loadEntries();
+            alert("Entries imported successfully!");
+          }
+        } catch (err) {
+          alert("Error reading the file. Please check the file format.");
+        }
+        event.target.value = ''; // Reset file input
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllEntries() {
+      if (confirm("Are you sure you want to clear ALL entries? This cannot be undone.")) {
+        localStorage.removeItem('journalEntries');
+        loadEntries();
+      }
+    }
+
+    function searchEntries() {
+      const searchQuery = document.getElementById('search').value.toLowerCase();
+      const filterDate = document.getElementById('filter-date').value;
+      const filterCategory = document.getElementById('filter-category').value;
+      const filterMood = document.getElementById('filter-mood').value;
+
+      const container = document.getElementById('entries');
+      const entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+
+      const filteredEntries = entries.filter(entry => {
+        const matchesSearch = entry.title.toLowerCase().includes(searchQuery) || entry.content.toLowerCase().includes(searchQuery);
+        const matchesDate = !filterDate || entry.date === filterDate;
+        const matchesCategory = !filterCategory || entry.category === filterCategory;
+        const matchesMood = !filterMood || entry.mood === filterMood;
+        return matchesSearch && matchesDate && matchesCategory && matchesMood;
+      });
+
+      if (filteredEntries.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-book"></i>
+            <h3>No matching entries</h3>
+            <p>Try adjusting your filters or search terms</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      filteredEntries.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'entry';
+        div.innerHTML = `
+          <h3>${entry.title} <small>${entry.mood}</small></h3>
+          <small>${entry.date} - <strong>${entry.category}</strong></small>
+          <p>${entry.content}</p>
+          <div class="entry-actions">
+            <button onclick="deleteEntry(${entry.id})" class="danger">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
